@@ -1,0 +1,2 @@
+FlightRadarAPI==1.2.1
+tweepy==4.10.0
