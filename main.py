@@ -2,6 +2,8 @@ import config
 import tweepy
 from FlightRadar24.api import FlightRadar24API
 from time import sleep
+from datetime import datetime
+from datetime import timezone
 
 
 def auth():  # Twitter API authentication, done with environment variables declared in config.py
@@ -35,9 +37,29 @@ def find_flight(flight_number):  # Cannot search flights only by number, we firs
             return flight
 
 
+def process_timestamp(timestamp):
+    if timestamp and timestamp != 0:  # Timestamps can be None or 0
+        date = datetime.fromtimestamp(timestamp, timezone.utc)
+        t = date.strftime("%Y/%m/%d, %H:%M UTC")
+    else:
+        t = "Unknown"
+    return t
+
+
 def create_reply(flight_details):  # Formulate the tweet reply depending on the data we got
     if flight_details:
-        reply = f"{flight_details.airline_short_name} flight number {flight_details.number} is currently heading from {flight_details.origin_airport_name} to {flight_details.destination_airport_name}."
+        flight_eta_timestamp = flight_details.time_details["other"]["eta"]
+        flight_dep_timestamp = flight_details.time_details["real"]["departure"]
+        flight_departure = process_timestamp(flight_dep_timestamp)
+        flight_eta = process_timestamp(flight_eta_timestamp)
+        reply = f"""
+{flight_details.airline_short_name} flight number {flight_details.number}:
+Origin: {flight_details.origin_airport_name}
+Departure time: {flight_departure}
+Destination: {flight_details.destination_airport_name}
+ETA: {flight_eta}
+Altitude: {flight_details.altitude} feet
+        """
     else:
         reply = "Flight number was not found or is not currently active."
     return reply
@@ -53,7 +75,8 @@ def post_reply(tweet_id, reply):  # Post the reply on Twitter
 def process_tweet(tweet):  # Big function that runs everything else
     global start_id
     try:
-        if tweet.in_reply_to_user_id is None:  # Tweet only if it's not a mention
+        # Tweet only if it's not a mention and if split text has more than 1 index to avoid out of range error
+        if tweet.in_reply_to_user_id is None and len(tweet.text.split(" ")) > 1:
             flight_number = tweet.text.split(" ")[1]  # Separate the mention from the actual flight number
             flight_details = find_flight(flight_number)
             reply = create_reply(flight_details)
