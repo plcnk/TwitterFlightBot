@@ -19,5 +19,5 @@ updates:
       interval: "weekly"
       day: "saturday"
       time: "10:00"
-      reviewers:
-        - "plcnk"
+    reviewers:
+      - "plcnk"
