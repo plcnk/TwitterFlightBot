@@ -39,8 +39,8 @@ def find_flight(flight_number):  # Cannot search flights only by number, we firs
 
 def process_timestamp(timestamp):
     if timestamp and timestamp != 0:  # Timestamps can be None or 0
-        date = datetime.fromtimestamp(timestamp, timezone.utc)
-        t = date.strftime("%Y/%m/%d, %H:%M UTC")
+        date = datetime.fromtimestamp(timestamp, timezone.utc)  # Convert timestamp into datetime
+        t = date.strftime("%Y/%m/%d, %H:%M UTC")  # Format datetime
     else:
         t = "Unknown"
     return t
