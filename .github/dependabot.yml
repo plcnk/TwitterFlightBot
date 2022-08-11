@@ -1,0 +1,15 @@
+---
+version: 2
+
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+      time: "04:00"
+    labels:
+      - "pip"
+      - "dependencies"
+    reviewers:
+      - "plcnk"
