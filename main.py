@@ -52,13 +52,14 @@ def create_reply(flight_details):  # Formulate the tweet reply depending on the 
         flight_dep_timestamp = flight_details.time_details["real"]["departure"]
         flight_departure = process_timestamp(flight_dep_timestamp)
         flight_eta = process_timestamp(flight_eta_timestamp)
+        altitude = "On ground" if flight_details.altitude == 0 else f"{flight_details.altitude} feet"
         reply = f"""
 {flight_details.airline_short_name} flight number {flight_details.number}:
 Origin: {flight_details.origin_airport_name}
 Departure time: {flight_departure}
 Destination: {flight_details.destination_airport_name}
 ETA: {flight_eta}
-Altitude: {flight_details.altitude} feet
+Altitude: {altitude}
         """
     else:
         reply = "Flight number was not found or is not currently active."
