@@ -1,0 +1,12 @@
+version: '3'
+services:
+  bot:
+    image: twitterflightbot:latest
+    container_name: bot
+    restart: unless-stopped
+    environment:
+      TWITTER_API_KEY: "XXXXX"
+      TWITTER_API_KEY_SECRET: "XXXXX"
+      TWITTER_ACCESS_TOKEN: "XXXXX"
+      TWITTER_ACCESS_TOKEN_SECRET: "XXXXX"
+      TWITTER_BEARER_TOKEN: "XXXXX"
