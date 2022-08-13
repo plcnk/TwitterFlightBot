@@ -12,7 +12,8 @@ The bot will reply to you with the following information:
 * The Estimated Time of Arrival in UTC timezone
 * The altitude in feet
 
-**Be aware that the flight must be active for the bot to work, meaning the plane's transponder must be on.**
+> **Note** -
+> Be aware that the flight must be active for the bot to work, meaning the plane's transponder must be on.
 
 The code is written in Python and uses [Tweepy](https://pypi.org/project/tweepy/) for the Twitter connection and [FlightRadarAPI](https://pypi.org/project/FlightRadarAPI/) for the Flghtradar24 API.
 This bot is not affiliated with [Flightradar24](https://www.flightradar24.com/) in any way.
