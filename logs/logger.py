@@ -12,5 +12,5 @@ def create_logger():
     file_handler.setFormatter(formatter)
 
     logger.addHandler(file_handler)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.WARNING)
     return logger
