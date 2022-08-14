@@ -1,8 +1,8 @@
 version: '3'
 services:
-  bot:
+  twitterflightbot:
     image: plck/twitterflightbot:latest
-    container_name: bot
+    container_name: twitterflightbot
     restart: unless-stopped
     environment:
       TWITTER_API_KEY: "XXXXX"
