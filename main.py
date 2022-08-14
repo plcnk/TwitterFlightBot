@@ -1,4 +1,5 @@
 import config
+from logs import logger
 import tweepy
 from FlightRadar24.api import FlightRadar24API
 from time import sleep
@@ -22,13 +23,19 @@ def find_flight(flight_number):  # Cannot search flights only by number, we firs
     fr_api = FlightRadar24API()
     airline_iata = flight_number[0:2]  # IATA code is the first 2 characters in the flight number
     airline_icao = flight_number[0:3]  # Same but it's the first 3 characters
+    airline_icao_new = None
     airlines = fr_api.get_airlines()
 
     for airline in airlines:
         if airline["Code"] == airline_iata or airline["ICAO"] == airline_icao:
-            airline_icao = airline["ICAO"]  # If any code matches an airline, use its ICAO code
+            airline_icao_new = airline["ICAO"]  # If any code matches an airline, use its ICAO code
+            log.info("Found airline ICAO: %s", airline_icao_new)
 
-    flights = fr_api.get_flights(airline=airline_icao)
+    if airline_icao_new is None:  # Don't search for the flight if airline is not found
+        log.warning("Airline not found: %s", airline_iata)
+        return None
+
+    flights = fr_api.get_flights(airline=airline_icao_new)
 
     for flight in flights:
         if flight.number == flight_number:  # If a flight number matches, we get all flight details
@@ -43,10 +50,11 @@ def process_timestamp(timestamp):
         t = date.strftime("%Y/%m/%d, %H:%M UTC")  # Format datetime
     else:
         t = "Unknown"
+        log.warning("Could not process timestamp")
     return t
 
 
-def create_reply(flight_details):  # Formulate the tweet reply depending on the data we got
+def create_reply(flight_details, flight_number):  # Formulate the tweet reply depending on the data we got
     if flight_details:
         flight_eta_timestamp = flight_details.time_details["other"]["eta"]
         flight_dep_timestamp = flight_details.time_details["real"]["departure"]
@@ -61,16 +69,19 @@ Destination: {flight_details.destination_airport_name}
 ETA: {flight_eta}
 Altitude: {altitude}
         """
+        log.info("Flight found: %s", flight_details.number)
     else:
         reply = "Flight number was not found or is not currently active."
+        log.warning("Flight not found: %s", flight_number)
     return reply
 
 
 def post_reply(tweet_id, reply):  # Post the reply on Twitter
     try:
         api.create_tweet(in_reply_to_tweet_id=tweet_id, text=reply)
+        log.info("Posted reply to tweet ID: %s", tweet_id)
     except tweepy.errors.TweepyException as error:
-        print(error)
+        log.error(error)
 
 
 def process_tweet(tweet):  # Big function that runs everything else
@@ -79,19 +90,20 @@ def process_tweet(tweet):  # Big function that runs everything else
         # Tweet only if it's not a mention and if split text has more than 1 index to avoid out of range error
         if tweet.in_reply_to_user_id is None and len(tweet.text.split(" ")) > 1:
             flight_number = tweet.text.split(" ")[1]  # Separate the mention from the actual flight number
+            log.info("Mention - User ID: %s, number: %s", tweet.author_id, flight_number)
             flight_details = find_flight(flight_number)
-            reply = create_reply(flight_details)
+            reply = create_reply(flight_details, flight_number)
             post_reply(tweet.id, reply)
             start_id = tweet.id
         else:
             start_id = tweet.id  # Skip the tweet and move on
     except Exception as error:
-        print(error)
+        log.error(error)
 
 
 def scan_mentions():  # Perpetually scan for mentions (every 10 seconds)
     global start_id
-    mentions = api.get_users_mentions(client_id, since_id=start_id, expansions=["in_reply_to_user_id"])
+    mentions = api.get_users_mentions(client_id, since_id=start_id, expansions=["in_reply_to_user_id", "author_id"])
     if mentions.data:
         for tweet in mentions.data:
             process_tweet(tweet)
@@ -99,6 +111,7 @@ def scan_mentions():  # Perpetually scan for mentions (every 10 seconds)
 
 
 if __name__ == "__main__":
+    log = logger.create_logger()
     api = auth()
     client_id = api.get_me().data.id
     start_id = 1
