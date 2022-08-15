@@ -44,13 +44,13 @@ def find_flight(flight_number):  # Cannot search flights only by number, we firs
             return flight
 
 
-def process_timestamp(timestamp):
+def process_timestamp(timestamp, flight_number, timestamp_type):
     if timestamp and timestamp != 0:  # Timestamps can be None or 0
         date = datetime.fromtimestamp(timestamp, timezone.utc)  # Convert timestamp into datetime
         t = date.strftime("%Y/%m/%d, %H:%M UTC")  # Format datetime
     else:
         t = "Unknown"
-        log.warning("Could not process timestamp")
+        log.warning("Could not process timestamp: %s (%s)", flight_number, timestamp_type)
     return t
 
 
@@ -58,8 +58,8 @@ def create_reply(flight_details, flight_number):  # Formulate the tweet reply de
     if flight_details:
         flight_eta_timestamp = flight_details.time_details["other"]["eta"]
         flight_dep_timestamp = flight_details.time_details["real"]["departure"]
-        flight_departure = process_timestamp(flight_dep_timestamp)
-        flight_eta = process_timestamp(flight_eta_timestamp)
+        flight_departure = process_timestamp(flight_dep_timestamp, flight_number, "departure")
+        flight_eta = process_timestamp(flight_eta_timestamp, flight_number, "eta")
         altitude = "On ground" if flight_details.altitude == 0 else f"{flight_details.altitude} feet"
         reply = f"""
 {flight_details.airline_short_name} flight number {flight_details.number}:
