@@ -15,7 +15,6 @@ def auth():  # Twitter API authentication, done with environment variables decla
         access_token=config.ACCESS_TOKEN,
         access_token_secret=config.ACCESS_TOKEN_SECRET,
     )
-
     return client
 
 
