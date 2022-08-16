@@ -60,7 +60,7 @@ def create_reply(flight_details, flight_number):  # Formulate the tweet reply de
         flight_dep_timestamp = flight_details.time_details["real"]["departure"]
         flight_departure = process_timestamp(flight_dep_timestamp, flight_number, "departure")
         flight_eta = process_timestamp(flight_eta_timestamp, flight_number, "eta")
-        altitude = "On ground" if flight_details.altitude == 0 else f"{flight_details.altitude} feet"
+        altitude = "On ground" if flight_details.on_ground == 1 else f"{flight_details.altitude} feet"
         reply = f"""
 {flight_details.airline_short_name} flight number {flight_details.number}:
 Origin: {flight_details.origin_airport_name}
@@ -90,6 +90,7 @@ def process_tweet(tweet):  # Big function that runs everything else
         # Tweet only if it's not a mention and if split text has more than 1 index to avoid out of range error
         if tweet.in_reply_to_user_id is None and len(tweet.text.split(" ")) > 1:
             flight_number = tweet.text.split(" ")[1]  # Separate the mention from the actual flight number
+            flight_number = flight_number.upper()
             log.info("Mention - User ID: %s, number: %s", tweet.author_id, flight_number)
             flight_details = find_flight(flight_number)
             reply = create_reply(flight_details, flight_number)
