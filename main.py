@@ -40,6 +40,8 @@ def find_flight(flight_number):  # Cannot search flights only by number, we firs
         airline_icao_new = airline_icao_check
     elif airline_iata_check == 0 and airline_icao_check == 0:
         airline_icao_new = None
+    elif airline_iata_check == 0 and airline_icao_check != 0:
+        airline_icao_new = airline_icao_check
     else:
         airline_icao_new = airline_iata_check
 
