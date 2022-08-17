@@ -22,13 +22,26 @@ def find_flight(flight_number):  # Cannot search flights only by number, we firs
     fr_api = FlightRadar24API()
     airline_iata = flight_number[0:2]  # IATA code is the first 2 characters in the flight number
     airline_icao = flight_number[0:3]  # Same but it's the first 3 characters
-    airline_icao_new = None
+    airline_iata_check = 0
+    airline_icao_check = 0
     airlines = fr_api.get_airlines()
 
     for airline in airlines:
-        if airline["Code"] == airline_iata or airline["ICAO"] == airline_icao:
-            airline_icao_new = airline["ICAO"]  # If any code matches an airline, use its ICAO code
-            log.info("Found airline ICAO: %s", airline_icao_new)
+        # If IATA matches, assign it to a check variable, same with ICAO
+        if airline["Code"] == airline_iata:
+            airline_iata_check = airline["ICAO"]
+            log.info("Found airline IATA: %s", airline["Code"])
+        elif airline["ICAO"] == airline_icao:
+            airline_icao_check = airline["ICAO"]
+            log.info("Found airline ICAO %s", airline["ICAO"])
+
+    # If both IATA and ICAO are assigned, assign the one that matches the ICAO
+    if airline_iata_check != 0 and airline_icao_check != 0:
+        airline_icao_new = airline_icao_check
+    elif airline_iata_check == 0 and airline_icao_check == 0:
+        airline_icao_new = None
+    else:
+        airline_icao_new = airline_iata_check
 
     if airline_icao_new is None:  # Don't search for the flight if airline is not found
         log.warning("Airline not found: %s", airline_iata)
@@ -37,7 +50,8 @@ def find_flight(flight_number):  # Cannot search flights only by number, we firs
     flights = fr_api.get_flights(airline=airline_icao_new)
 
     for flight in flights:
-        if flight.number == flight_number:  # If a flight number matches, we get all flight details
+        # If a flight number / callsign matches, we get all flight details
+        if flight.number == flight_number or flight.callsign == flight_number:
             details = fr_api.get_flight_details(flight.id)
             flight.set_flight_details(details)
             return flight
@@ -53,6 +67,15 @@ def process_timestamp(timestamp, flight_number, timestamp_type):
     return t
 
 
+def process_number(flight_details):
+    if flight_details.number == "N/A":
+        number = f"callsign {flight_details.callsign}"
+        log.warning("No flight number, using callsign: %s", flight_details.callsign)
+    else:
+        number = f"number {flight_details.number}"
+    return number
+
+
 def create_reply(flight_details, flight_number):  # Formulate the tweet reply depending on the data we got
     if flight_details:
         flight_eta_timestamp = flight_details.time_details["other"]["eta"]
@@ -60,8 +83,9 @@ def create_reply(flight_details, flight_number):  # Formulate the tweet reply de
         flight_departure = process_timestamp(flight_dep_timestamp, flight_number, "departure")
         flight_eta = process_timestamp(flight_eta_timestamp, flight_number, "eta")
         altitude = "On ground" if flight_details.on_ground == 1 else f"{flight_details.altitude} feet"
+        number_reply = process_number(flight_details)
         reply = f"""
-{flight_details.airline_short_name} flight number {flight_details.number}:
+{flight_details.airline_short_name} flight {number_reply}:
 Origin: {flight_details.origin_airport_name}
 Departure time: {flight_departure}
 Destination: {flight_details.destination_airport_name}
