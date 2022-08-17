@@ -1,11 +1,11 @@
 # Twitter Flight Bot
 
-This bot will return information about a flight when you tag it with its flight number.
-To use it, you need to tag it by its Twitter handle [@FlightStatusBot](https://twitter.com/FlightStatusBot) and follow with a flight number like so: `.@FlightStatusBot U2189`.
+This bot will return information about a flight when you tag it with its flight number or its callsign.
+To use it, you need to tag it by its Twitter handle [@FlightStatusBot](https://twitter.com/FlightStatusBot) and follow with a flight number / callsign like so: `.@FlightStatusBot U2189`.
 
 The bot will reply to you with the following information:
 
-* The airline name with the flight number
+* The airline name with the flight number / callsign
 * The origin airport name
 * The actual departure time in UTC timezone
 * The arrival airport name
