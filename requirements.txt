@@ -1,2 +1,2 @@
-FlightRadarAPI==1.2.5
+FlightRadarAPI==1.2.7
 tweepy==4.14.0
