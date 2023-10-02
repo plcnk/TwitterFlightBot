@@ -1,4 +1,4 @@
-# Twitter Flight Bot
+# (ARCHIVED) Twitter Flight Bot
 
 This bot will return information about a flight when you tag it with its flight number or its callsign.
 To use it, you need to tag it by its Twitter handle [@FlightStatusBot](https://twitter.com/FlightStatusBot) and follow with a flight number / callsign like so: `.@FlightStatusBot U2189`.
